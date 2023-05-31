@@ -14,10 +14,15 @@ class PostCreate(LoginRequiredMixin,CreateView):
     template_name = "newPost.html"
     login_url = '/account/user/login/'
     redirect_field_name = 'redirect_to'
+
+    def get_success_url(self):
+        return reverse("post:list")
+
     def form_valid(self, form):
         current_user = self.request.user
         if current_user.is_authenticated:
             form.instance.author = current_user
+
             return super(PostCreate, self).form_valid(form)
         else:
             messages.error(self.request, '로그인을 먼저 해주세요.', extra_tags='danger')
@@ -27,8 +32,7 @@ class PostCreate(LoginRequiredMixin,CreateView):
         print(form.data,form.errors)
         return super(PostCreate, self).form_invalid(form)
 
-    def get_success_url(self):
-        return reverse("post:list")
+
 
 class PostListView(ListView):
     model = Post
@@ -62,6 +66,10 @@ class PostUpdateView(UpdateView):
     fields = ["title","content","image"]
     template_name = "editPost.html"
 
+    def get_success_url(self):
+        print(reverse("post:detail",args=[self.get_object().pk]))
+        return reverse("post:detail",args=[self.get_object().pk])
+
     def form_valid(self, form):
         obj = self.get_object()
         current_user = self.request.user
@@ -83,8 +91,7 @@ class PostUpdateView(UpdateView):
             print(form.data,form.errors)
             return super(PostUpdateView, self).form_invalid(form)
 
-    def get_success_url(self):
-        return reverse("post:detail",args=(str(self.get_object().pk)))
+
 
 class PostDeleteView(DeleteView):
     model = Post
